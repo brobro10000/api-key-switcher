@@ -3,26 +3,29 @@ function localKeyCount(keysAlias, calls, expirationHours) {
     let keyValues = ''
     let dateToday = (Date.parse(Date())) //?
     let dateScale = (expirationHours * 3600 * 1000)
-    let date = new Date(dateToday + dateScale)
+    let stringDate = new Date().toLocaleDateString()
+    let stringTime = new Date().toLocaleTimeString()
 
-    console.log(`Your keys will refresh on ${date.toLocaleDateString(dateToday + dateScale)} at ${date.toLocaleTimeString(dateToday + dateScale)}`)
-
-    if (localStorage.getItem('keyCount') == null || localStorage.getItem('expiration') == null) {
+    if (localStorage.getItem('keyCount') == null || localStorage.getItem('createdAt') == null) {
         keyValues = populateKeyCount(keysAlias, calls);
         localStorage.setItem('keyCount', JSON.stringify(keyValues))
-        localStorage.setItem('expiration', dateToday)
+        localStorage.setItem('createdAt', dateToday)
+
+        console.log(`Key calls created on ${stringDate} at ${stringTime}`)
 
         return localKeyCount(keysAlias, calls, expirationHours)
     } else {
         let value = localStorage.getItem('keyCount')
-        let time = parseInt(localStorage.getItem('expiration'))
+        let time = parseInt(localStorage.getItem('createdAt'))
+        let date = new Date(time + dateScale)
 
         if (dateToday > (dateScale + time)) {
-            localStorage.removeItem('expiration');
+            localStorage.removeItem('createdAt');
             localStorage.removeItem('keyCount')
 
             return localKeyCount(keysAlias, calls, expirationHours)
         }
+        console.log(`Your keys will refresh on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`)
 
         keyValues = JSON.parse(value)
 
@@ -80,7 +83,7 @@ function fetchAPI() {
     const keyCount = localKeyCount(keysAlias, maxCalls, expirationHours) //initializes keyCount with localStorage keyCount object
 
     if (pickBestKey(keyCount) == -1) {
-        return console.log('Out of key. Clear local storage to end this message.')
+        return console.log('Out of key calls. Clear local storage to end this message.')
     }
 
     let apiURL = `https://testURL.com/coding/is/fun/?q=answerKey&apiKey=${keys[keysAlias.indexOf(pickBestKey(keyCount))]}` //picks best key from array of keys based on highest remaining calls
@@ -96,6 +99,4 @@ function fetchAPI() {
 };
 
 //Your API Call
-// console.time('time')
-// fetchAPI()
-// console.timeEnd('time')
+fetchAPI()
