@@ -13,7 +13,7 @@ Leverages local storage with a mask of your keys.
 
 Simply populate the array of 'keys' with unique keys for the API call as a string, and the max number of calls and fetch your API.
 
-### Set an expiration time in hours of how often the calls reset. 
+Set an expiration time in hours of how often the calls reset. 
 
 For Instance:
 
