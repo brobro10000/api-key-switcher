@@ -13,6 +13,14 @@ Leverages local storage with a mask of your keys.
 
 Simply populate the array of 'keys' with unique keys for the API call as a string, and the max number of calls and fetch your API.
 
+Set an expiration time in hours of how often the calls reset. 
+
+For Instance:
+
+1 day = 24 hours
+
+1 month = 730 hours
+
 Commments in the script on how to implement in program. The entire script is needed, where fetchAPI() represents your API call. 
 
 ## Technologies Leveraged
