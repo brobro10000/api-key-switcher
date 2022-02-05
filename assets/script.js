@@ -1,56 +1,74 @@
 //initializes localStorage with keyCount
 function localKeyCount(keyLength, calls, expirationHours, secretKey) {
-    let keyValues = ''
-    let dateToday = (Date.parse(Date()))
     let dateScale = (expirationHours * 3600 * 1000)
-    let currentDate = new Date()
+    let time = parseInt(localStorage.getItem(`createdAt${secretKey}`))
+    let date = new Date(time + dateScale)
 
     if (localStorage.getItem(`keyCount${secretKey}`) == null || localStorage.getItem(`createdAt${secretKey}`) == null) {
-        keyValues = populateKeyCount(keyLength, calls);
-        localStorage.setItem(`keyCount${secretKey}`, JSON.stringify(keyValues))
-        localStorage.setItem(`createdAt${secretKey}`, dateToday)
-
-        console.log(`Key calls created on ${currentDate.toLocaleDateString()} at ${currentDate.toLocaleTimeString()}`)
-
-        return localKeyCount(keyLength, calls, expirationHours, secretKey)
+        return setStorage(keyLength, calls, expirationHours, secretKey)
     } else {
-        let value = localStorage.getItem(`keyCount${secretKey}`)
         let time = parseInt(localStorage.getItem(`createdAt${secretKey}`))
         let date = new Date(time + dateScale)
 
-        if (dateToday > (dateScale + time)) {
-            localStorage.removeItem(`createdAt${secretKey}`);
-            localStorage.removeItem(`keyCount${secretKey}`)
-
-            return localKeyCount(keyLength, calls, expirationHours, secretKey)
-        }
         console.log(`Your keys will refresh on ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`)
-        keyValues = JSON.parse(value)
-
-        return keyValues
+        return removeStorage(keyLength, calls, expirationHours, secretKey, time)
     }
 }
 
+function setStorage(keyLength, calls, expirationHours, secretKey,) {
+    let currentDate = new Date()
+    let dateToday = (Date.parse(Date()))
+
+    keyValues = populateKeyCount(keyLength, calls);
+    localStorage.setItem(`keyCount${secretKey}`, JSON.stringify(keyValues))
+    localStorage.setItem(`createdAt${secretKey}`, dateToday)
+
+    console.log(`Key calls created on ${currentDate.toLocaleDateString()} at ${currentDate.toLocaleTimeString()}`)
+
+    return localKeyCount(keyLength, calls, expirationHours, secretKey)
+}
+
+function removeStorage(keyLength, calls, expirationHours, secretKey, time) {
+    let value = JSON.parse(localStorage.getItem(`keyCount${secretKey}`))
+    let dateToday = (Date.parse(Date()))
+    let dateScale = (expirationHours * 3600 * 1000)
+
+    if (dateToday > (dateScale + time)) {
+        localStorage.removeItem(`createdAt${secretKey}`);
+        localStorage.removeItem(`keyCount${secretKey}`)
+
+        return localKeyCount(keyLength, calls, expirationHours, secretKey)
+    } else {
+        return value
+    }
+
+}
 //Populate keys with maxCall amount from localKeyCount
 function populateKeyCount(arrLength, calls) {
     let arr = new Array(arrLength)
-    let uniqueArr = []
-    let i = 0;
-    while (uniqueArr.length < arrLength) {
-        uniqueArr.push(getRandom(10000))
-        if (uniqueArr.indexOf(uniqueArr[i]) == -1) {
-            i++
-        } else {
-            uniqueArr[i] = getRandom(10000)
-        }
-    }
+    let unique = uniqueArr(arrLength)
+
     for (var j = 0; j < arrLength; j++) {
-        arr[j] = ([getRandom(1, 9999), calls])
+        arr[j] = ([unique[j], calls])
     }
 
     return Object.fromEntries(arr)
 };
+function uniqueArr(arrLength) {
+    let uniqueArr = []
+    let i = 0;
 
+    while (uniqueArr.length < arrLength) {
+        uniqueArr.push(getRandom(1, 10000))
+        if (uniqueArr.indexOf(uniqueArr[i]) == -1) {
+            i++
+        } else {
+            uniqueArr[i] = getRandom(1, 10000)
+        }
+    }
+
+    return uniqueArr
+}
 //Best best key with most calls remaining
 function pickBestKey(keyCount) {
     let keyObj = Object.entries(keyCount)
@@ -87,30 +105,7 @@ function getRandom(min, max) {
 function fetchAPI() {
     const secretKey = 'abc123' //Enter a unique string for each fetch that usees a different set of keys
     const keys = ['trueKey1', 'trueKey2', 'trueKey3', 'trueKey4']; //Your actual API Key at each index for each amount of keys
-    const maxCalls = 100 //someInteger of Max calls for API
-    const expirationHours = 24
-    const keyCount = localKeyCount(keys.length, maxCalls, expirationHours, secretKey) //initializes keyCount with localStorage keyCount object
-
-    if (pickBestKey(keyCount) == -1) {
-        return console.log('Out of key calls. Clear local storage to end this message.')
-    }
-
-    let apiURL = `https://testURL.com/coding/is/fun/?q=answerKey&apiKey=${keys[pickBestKey(keyCount)]}` //picks best key from array of keys based on highest remaining calls
-
-    /*After fetch(apiURL).then(response => {
-        if(response.ok){*/
-    updateKeyCount(pickBestKey(keyCount), keyCount, secretKey)
-    /*      return response.json()  
-}
-}) */
-
-    console.log(keyCount) //Objest of calls left for each Key 
-};
-
-function fetchAPI2() {
-    const secretKey = 'abc345' //Enter a unique string for each fetch that usees a different set of keys
-    const keys = ['trueKey1', 'trueKey2', 'trueKey3', 'trueKey4']; //Your actual API Key at each index for each amount of keys
-    const maxCalls = 100 //someInteger of Max calls for API
+    const maxCalls = 3 //someInteger of Max calls for API
     const expirationHours = 24
     const keyCount = localKeyCount(keys.length, maxCalls, expirationHours, secretKey) //initializes keyCount with localStorage keyCount object
 
@@ -131,5 +126,4 @@ function fetchAPI2() {
 };
 
 //Your API Call
-fetchAPI()
-fetchAPI2()
+fetchAPI() 
